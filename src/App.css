@@ -1,22 +1,86 @@
-body {
-  margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
-  color: rgb(42, 48, 61);
+/* Root app container */
+.app {
+  min-height: 100vh;
+  background-color: var(--lx-color-background, #fafafa);
+  font-family: var(--lx-font-family, 'SAP 72', sans-serif);
 }
 
-.app {
-  height: 100vh;
-  margin-right: 16px;
-
+/* Loading state */
+.app--loading {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
 }
 
-.chart-container {
-  flex: 1;
-  min-height: 0;
-  margin-bottom: 16px;
+.loading-text {
+  color: var(--lx-color-text-secondary, #666);
+  font-size: 0.875rem;
+}
+
+/* Error state */
+.app--error {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.error-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error-retry-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--lx-color-primary, #0070c0);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.error-retry-button:hover {
+  background-color: var(--lx-color-primary-hover, #0055a0);
+}
+
+/* Header */
+.app__header {
+  background-color: var(--lx-color-surface, #ffffff);
+  border-bottom: 1px solid var(--lx-color-neutral-200, #e0e0e0);
+  padding: 2rem;
+  text-align: center;
+}
+
+.app__title {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--lx-color-text-primary, #333);
+}
+
+.app__subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--lx-color-text-secondary, #666);
+  font-weight: 400;
+}
+
+/* Main content */
+.app__main {
+  padding: 2rem 0;
+}
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
 }

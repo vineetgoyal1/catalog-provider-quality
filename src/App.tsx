@@ -1,124 +1,127 @@
-/**
- * Demo LeanIX Custom Report
- *
- * This demonstrates a basic LeanIX custom report that visualizes Applications by Business Criticality.
- * The report displays a bar chart showing the distribution of applications across different criticality levels:
- * - Administrative Service
- * - Business Operational
- * - Business Critical
- * - Mission Critical
- *
- * Feel free to customize this example or start from scratch with your own implementation.
- */
-
-import type { lxr } from '@leanix/reporting';
+import { useEffect, useState, useMemo } from 'react';
 import { lx } from '@leanix/reporting';
-import { useEffect, useMemo, useState } from 'react';
-import { BarChart } from './BarChart';
+import { OverviewCards } from './components/OverviewCards';
+import { DrillDownModal } from './components/DrillDownModal';
+import { LxSpinner } from './components/ui/lx-spinner';
+import { LxBanner } from './components/ui/lx-banner';
+import type { Provider, QualityMetrics } from './types/provider.types';
+import { fetchAllProviders } from './utils/fetchProviders';
+import { assessProviderQuality } from './utils/assessQuality';
 import './App.css';
 
-const FACT_SHEET_TYPE = 'Application';
-const FIELD_NAME = 'businessCriticality';
-
-interface CriticalityConfig {
-  order: string[];
-  colors: Record<string, string>;
-  labels: Record<string, string>;
-}
-
 function App() {
-  const [applications, setApplications] = useState<lxr.FactSheet[]>([]);
-  const [criticalityConfig, setCriticalityConfig] = useState<CriticalityConfig>({
-    order: [],
-    colors: {},
-    labels: {}
-  });
+  // State
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [workspaceHost, setWorkspaceHost] = useState<string>('');
+  const [loadingProgress, setLoadingProgress] = useState<string>('');
 
+  // Initialize LeanIX SDK and fetch data
   useEffect(() => {
-    const initReport = async () => {
-      const setup = await lx.init();
-      const settings = setup.settings;
+    const initAndFetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Get business criticality configuration from data model
-      const config: CriticalityConfig = {
-        order: [],
-        colors: {},
-        labels: {}
-      };
+        // Initialize LeanIX SDK
+        const setup = await lx.init();
 
-      const criticalityField = settings.dataModel.factSheets[FACT_SHEET_TYPE]?.fields?.[FIELD_NAME];
-      if (criticalityField && 'values' in criticalityField) {
-        config.order = criticalityField.values as string[];
+        // Get workspace host for inventory links
+        const host = setup.settings.baseUrl.replace('https://', '').replace('http://', '');
+        setWorkspaceHost(host);
+
+        // Configure report (minimal config, no facets needed)
+        lx.ready({});
+
+        // Fetch providers with progress updates
+        const fetchedProviders = await fetchAllProviders((page, total) => {
+          setLoadingProgress(`Loading providers... Page ${page}, ${total} total`);
+        });
+
+        setProviders(fetchedProviders);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error initializing report:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load providers');
+        setLoading(false);
       }
-
-      const metadata = lx.getFactSheetFieldMetaData(FACT_SHEET_TYPE, FIELD_NAME);
-      if (metadata && 'values' in metadata) {
-        for (const [key, value] of Object.entries(metadata.values)) {
-          config.colors[key] = value.bgColor || '#ffffff';
-          config.labels[key] = lx.translateFieldValue(FACT_SHEET_TYPE, FIELD_NAME, key);
-        }
-      }
-
-      setCriticalityConfig(config);
-
-      lx.ready({
-        facets: [
-          {
-            key: 'main',
-            fixedFactSheetType: FACT_SHEET_TYPE,
-            attributes: ['id', 'displayName', FIELD_NAME],
-            defaultFilters: [
-              {
-                facetKey: 'lxState',
-                keys: [] // Empty array = no quality seal filtering
-              }
-            ],
-            callback: (data) => {
-              setApplications(data || []);
-            }
-          }
-        ]
-      });
     };
 
-    initReport();
+    initAndFetchData();
   }, []);
 
-  const criticalityCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-
-    for (const app of applications) {
-      // Use dynamic field access to get the field value
-      const criticality = app[FIELD_NAME] as string | undefined;
-      // Use the field value, or 'n/a' if not set
-      const key = criticality || 'n/a';
-      counts[key] = (counts[key] || 0) + 1;
+  // Calculate quality metrics (memoized for performance)
+  const qualityMetrics: QualityMetrics = useMemo(() => {
+    if (providers.length === 0) {
+      return {
+        good: [],
+        needsImprovement: [],
+        totalCount: 0
+      };
     }
+    return assessProviderQuality(providers);
+  }, [providers]);
 
-    return counts;
-  }, [applications]);
+  // Handlers
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
-  const chartData = useMemo(() => {
-    // Include all configured criticality levels plus any found in data that aren't configured
-    const configuredLevels = criticalityConfig.order;
-    const foundLevels = Object.keys(criticalityCounts);
-    const allLevels = [...new Set([...configuredLevels, ...foundLevels])];
+  const handleRetry = () => {
+    window.location.reload();
+  };
 
-    // Filter to only show levels that have data
-    const levelsWithData = allLevels.filter((level) => (criticalityCounts[level] || 0) > 0);
+  // Loading state
+  if (loading) {
+    return (
+      <div className="app app--loading">
+        <LxSpinner fullSpace />
+        <p className="loading-text">{loadingProgress || 'Loading providers...'}</p>
+      </div>
+    );
+  }
 
-    return {
-      labels: levelsWithData.map((level) => criticalityConfig.labels[level] || level),
-      values: levelsWithData.map((level) => criticalityCounts[level] || 0),
-      colors: levelsWithData.map((level) => criticalityConfig.colors[level] || '#ffffff')
-    };
-  }, [criticalityCounts, criticalityConfig]);
+  // Error state
+  if (error) {
+    return (
+      <div className="app app--error">
+        <LxBanner type="danger" title="Error Loading Providers">
+          <div className="error-content">
+            <p>{error}</p>
+            <button onClick={handleRetry} className="error-retry-button">
+              Retry
+            </button>
+          </div>
+        </LxBanner>
+      </div>
+    );
+  }
 
+  // Main UI
   return (
     <div className="app">
-      <div className="chart-container">
-        <BarChart data={chartData} />
-      </div>
+      <header className="app__header">
+        <h1 className="app__title">Provider Quality Dashboard</h1>
+        <p className="app__subtitle">
+          Tracking description quality for {qualityMetrics.totalCount} providers
+        </p>
+      </header>
+
+      <main className="app__main">
+        <OverviewCards
+          goodCount={qualityMetrics.good.length}
+          needsImprovementCount={qualityMetrics.needsImprovement.length}
+          onClickNeedsImprovement={handleOpenModal}
+        />
+      </main>
+
+      <DrillDownModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        providers={qualityMetrics.needsImprovement}
+        workspaceHost={workspaceHost}
+      />
     </div>
   );
 }
