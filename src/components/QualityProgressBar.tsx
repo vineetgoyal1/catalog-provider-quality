@@ -9,8 +9,8 @@ interface QualityProgressBarProps {
   goodCount: number;
   needsImprovementCount: number;
   onClickNeedsImprovement: () => void;
-  goodHelper: string;
-  needsImprovementHelper: string;
+  goodHelper?: string;
+  needsImprovementHelper?: string;
 }
 
 export function QualityProgressBar({
@@ -20,9 +20,7 @@ export function QualityProgressBar({
   needsImprovementLabel,
   goodCount,
   needsImprovementCount,
-  onClickNeedsImprovement,
-  goodHelper,
-  needsImprovementHelper
+  onClickNeedsImprovement
 }: QualityProgressBarProps) {
   const totalCount = goodCount + needsImprovementCount;
   const goodPercentage = totalCount > 0 ? (goodCount / totalCount) * 100 : 0;
