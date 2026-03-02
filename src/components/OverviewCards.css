@@ -1,0 +1,32 @@
+.overview-cards {
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.overview-card {
+  flex: 1;
+  min-width: 0;
+}
+
+.overview-card--clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.overview-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.overview-card--clickable:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .overview-cards {
+    flex-direction: column;
+  }
+}
