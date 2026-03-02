@@ -24,6 +24,21 @@
   line-height: 1.5;
 }
 
+.overview-loading {
+  color: #3b82f6;
+  font-weight: 500;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 /* Progress Bar */
 .overview-progress-bar {
   display: flex;

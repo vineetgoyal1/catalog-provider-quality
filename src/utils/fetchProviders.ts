@@ -1,18 +1,18 @@
 import { lx } from '@leanix/reporting';
 import type { Provider } from '../types/provider.types';
 
-const PAGE_SIZE = 5000;
-const MAX_PAGES = 20;
+const PAGE_SIZE = 1000; // Reduced from 5000 for faster initial response
+const MAX_PAGES = 100; // Increased to handle more total providers
 
 /**
  * Fetch all providers from LeanIX workspace with pagination
  *
- * @param onProgress - Optional callback for progress updates (page count, total fetched)
+ * @param onProgress - Optional callback for progress updates (page count, total fetched, current providers, hasMore)
  * @returns Array of Provider fact sheets
  * @throws Error if GraphQL query fails
  */
 export async function fetchAllProviders(
-  onProgress?: (page: number, totalFetched: number) => void
+  onProgress?: (page: number, totalFetched: number, providers: Provider[], hasMore: boolean) => void
 ): Promise<Provider[]> {
   const allProviders: Provider[] = [];
   let cursor: string | null = null;
@@ -40,6 +40,15 @@ export async function fetchAllProviders(
               ... on Provider {
                 collectionStatus
                 deprecated
+                providerCategory
+                homePageUrl
+                headquartersAddress
+                relProviderToITComponent {
+                  totalCount
+                }
+                relProviderToProductFamily {
+                  totalCount
+                }
               }
             }
           }
@@ -60,7 +69,11 @@ export async function fetchAllProviders(
 
       // Filter: only readyForConsumption and not deprecated
       const providers = edges
-        .map((edge: any) => edge.node)
+        .map((edge: any) => ({
+          ...edge.node,
+          relProviderToITComponentCount: edge.node.relProviderToITComponent?.totalCount || 0,
+          relProviderToProductFamilyCount: edge.node.relProviderToProductFamily?.totalCount || 0
+        }))
         .filter((provider: any) =>
           provider.collectionStatus === 'readyForConsumption' &&
           provider.deprecated !== 'Yes'
@@ -69,13 +82,13 @@ export async function fetchAllProviders(
       allProviders.push(...providers);
       pageCount++;
 
-      // Report progress
-      if (onProgress) {
-        onProgress(pageCount, allProviders.length);
-      }
-
       // Check if there are more pages
       const { hasNextPage, endCursor } = allFactSheets.pageInfo;
+
+      // Report progress with current providers and hasMore flag
+      if (onProgress) {
+        onProgress(pageCount, allProviders.length, [...allProviders], hasNextPage);
+      }
 
       if (!hasNextPage || !endCursor) {
         break;

@@ -10,6 +10,8 @@ interface OverviewCardsProps {
   onClickGood: () => void;
   onClickFair: () => void;
   onClickNeedsWork: () => void;
+  isLoading?: boolean;
+  loadingProgress?: string;
 }
 
 export function OverviewCards({
@@ -21,7 +23,9 @@ export function OverviewCards({
   onClickPerfect,
   onClickGood,
   onClickFair,
-  onClickNeedsWork
+  onClickNeedsWork,
+  isLoading = false,
+  loadingProgress = ''
 }: OverviewCardsProps) {
   const perfectPct = totalCount > 0 ? (perfect / totalCount) * 100 : 0;
   const goodPct = totalCount > 0 ? (good / totalCount) * 100 : 0;
@@ -32,7 +36,10 @@ export function OverviewCards({
     <div className="overview-container">
       <div className="overview-header">
         <h2 className="overview-title">Executive Overview</h2>
-        <p className="overview-subtitle">Quality distribution for {totalCount.toLocaleString()} providers</p>
+        <p className="overview-subtitle">
+          Quality distribution for {totalCount.toLocaleString()} providers
+          {isLoading && <span className="overview-loading"> • {loadingProgress}</span>}
+        </p>
       </div>
 
       {/* Progress Bar */}

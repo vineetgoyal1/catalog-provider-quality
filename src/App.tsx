@@ -1,9 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { lx } from '@leanix/reporting';
 import { QualityProgressBar } from './components/QualityProgressBar';
 import { OverviewCards } from './components/OverviewCards';
-import { DrillDownModal } from './components/DrillDownModal';
-import { QualityBreakdownModal } from './components/QualityBreakdownModal';
 import { LxSpinner } from './components/ui/lx-spinner';
 import { LxBanner } from './components/ui/lx-banner';
 import { LxButton } from './components/ui/lx-button';
@@ -12,6 +10,10 @@ import type { Provider, QualityMetrics, ProviderQuality } from './types/provider
 import { fetchAllProviders } from './utils/fetchProviders';
 import { assessProviderQuality } from './utils/assessQuality';
 import './App.css';
+
+// Lazy load modals for better initial load performance
+const DrillDownModal = lazy(() => import('./components/DrillDownModal').then(m => ({ default: m.DrillDownModal })));
+const QualityBreakdownModal = lazy(() => import('./components/QualityBreakdownModal').then(m => ({ default: m.QualityBreakdownModal })));
 
 function App() {
   // State
@@ -24,6 +26,7 @@ function App() {
   const [isHeadquartersModalOpen, setIsHeadquartersModalOpen] = useState(false);
   const [isRelationsModalOpen, setIsRelationsModalOpen] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
+  const [isDataLoading, setIsDataLoading] = useState(false);
   const [breakdownModalOpen, setBreakdownModalOpen] = useState<'perfect' | 'good' | 'fair' | 'needsWork' | null>(null);
 
   // Initialize LeanIX SDK and fetch data
@@ -31,7 +34,6 @@ function App() {
     const initAndFetchData = async () => {
       try {
         console.log('🔵 App: Starting initialization...');
-        setLoading(true);
         setError(null);
 
         // Initialize LeanIX SDK
@@ -49,17 +51,29 @@ function App() {
         lx.ready({});
         console.log('✅ App: lx.ready() called');
 
+        // Show UI immediately, then fetch data
+        setLoading(false);
+        setIsDataLoading(true);
+
         // Fetch providers with progress updates
         console.log('🔵 App: Starting fetchAllProviders...');
-        const fetchedProviders = await fetchAllProviders((page, total) => {
-          const progress = `Loading providers... Page ${page}, ${total} total`;
-          console.log(`🔵 Progress: ${progress}`);
+        const fetchedProviders = await fetchAllProviders((page, total, currentProviders, hasMore) => {
+          const progress = 'Loading more...';
+          console.log(`🔵 Progress: Page ${page}, ${total} providers fetched`);
           setLoadingProgress(progress);
+          // Update UI with providers as we fetch them (progressive loading)
+          setProviders(currentProviders);
         });
 
         console.log(`✅ App: Fetched ${fetchedProviders.length} providers`);
         setProviders(fetchedProviders);
-        setLoading(false);
+        setLoadingProgress('Finalizing...');
+
+        // Small delay to allow final render with all data before hiding loader
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        setIsDataLoading(false);
+        setLoadingProgress('');
       } catch (err) {
         console.error('❌ App: Error initializing report:', err);
         console.error('❌ App: Error stack:', err instanceof Error ? err.stack : 'No stack');
@@ -315,6 +329,8 @@ function App() {
             onClickGood={handleOpenGoodModal}
             onClickFair={handleOpenFairModal}
             onClickNeedsWork={handleOpenNeedsWorkModal}
+            isLoading={isDataLoading}
+            loadingProgress={loadingProgress}
           />
 
           <div className="quality-metrics-grid">
@@ -380,57 +396,59 @@ function App() {
           </div>
         </main>
 
-        <DrillDownModal
-          isOpen={isDescriptionModalOpen}
-          onClose={handleCloseDescriptionModal}
-          providers={qualityMetrics.description.needsImprovement}
-          title="Providers Needing Description Improvement"
-          subtitle="providers with ≤30 words in description"
-          mode="description"
-        />
+        <Suspense fallback={<div />}>
+          <DrillDownModal
+            isOpen={isDescriptionModalOpen}
+            onClose={handleCloseDescriptionModal}
+            providers={qualityMetrics.description.needsImprovement}
+            title="Providers Needing Description Improvement"
+            subtitle="providers with ≤30 words in description"
+            mode="description"
+          />
 
-        <DrillDownModal
-          isOpen={isCategoryModalOpen}
-          onClose={handleCloseCategoryModal}
-          providers={qualityMetrics.category.needsImprovement}
-          title="Providers Missing Category"
-          subtitle="providers with no category defined"
-          mode="category"
-        />
+          <DrillDownModal
+            isOpen={isCategoryModalOpen}
+            onClose={handleCloseCategoryModal}
+            providers={qualityMetrics.category.needsImprovement}
+            title="Providers Missing Category"
+            subtitle="providers with no category defined"
+            mode="category"
+          />
 
-        <DrillDownModal
-          isOpen={isHomepageModalOpen}
-          onClose={handleCloseHomepageModal}
-          providers={qualityMetrics.homepage.needsImprovement}
-          title="Providers Missing Homepage URL"
-          subtitle="providers with no homepage URL defined"
-          mode="homepage"
-        />
+          <DrillDownModal
+            isOpen={isHomepageModalOpen}
+            onClose={handleCloseHomepageModal}
+            providers={qualityMetrics.homepage.needsImprovement}
+            title="Providers Missing Homepage URL"
+            subtitle="providers with no homepage URL defined"
+            mode="homepage"
+          />
 
-        <DrillDownModal
-          isOpen={isHeadquartersModalOpen}
-          onClose={handleCloseHeadquartersModal}
-          providers={qualityMetrics.headquarters.needsImprovement}
-          title="Providers Missing Headquarters Address"
-          subtitle="providers with no headquarters address defined"
-          mode="headquarters"
-        />
+          <DrillDownModal
+            isOpen={isHeadquartersModalOpen}
+            onClose={handleCloseHeadquartersModal}
+            providers={qualityMetrics.headquarters.needsImprovement}
+            title="Providers Missing Headquarters Address"
+            subtitle="providers with no headquarters address defined"
+            mode="headquarters"
+          />
 
-        <DrillDownModal
-          isOpen={isRelationsModalOpen}
-          onClose={handleCloseRelationsModal}
-          providers={qualityMetrics.relations.needsImprovement}
-          title="Providers Missing Relations"
-          subtitle="providers with no IT Component or Product Family relations"
-          mode="relations"
-        />
+          <DrillDownModal
+            isOpen={isRelationsModalOpen}
+            onClose={handleCloseRelationsModal}
+            providers={qualityMetrics.relations.needsImprovement}
+            title="Providers Missing Relations"
+            subtitle="providers with no IT Component or Product Family relations"
+            mode="relations"
+          />
 
-        <QualityBreakdownModal
-          isOpen={breakdownModalOpen !== null}
-          onClose={handleCloseBreakdownModal}
-          providers={breakdownProviders}
-          level={breakdownModalOpen || 'perfect'}
-        />
+          <QualityBreakdownModal
+            isOpen={breakdownModalOpen !== null}
+            onClose={handleCloseBreakdownModal}
+            providers={breakdownProviders}
+            level={breakdownModalOpen || 'perfect'}
+          />
+        </Suspense>
       </div>
     </TooltipProvider>
   );

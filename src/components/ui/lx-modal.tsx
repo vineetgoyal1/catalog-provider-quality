@@ -108,13 +108,17 @@ const LxModal = React.forwardRef<
 }, ref) => {
   return (
     <Dialog.Root {...props}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <Dialog.Portal container={document.body}>
+        <Dialog.Overlay
+          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          style={{ backdropFilter: 'blur(8px)' }}
+        />
         <Dialog.Content
           ref={ref}
           className={cn(
             modalVariants({ size, maxHeight }),
             scrollable && "overflow-hidden",
+            "shadow-2xl shadow-black/20",
             className
           )}
           onPointerDownOutside={closeOnOverlayClick ? undefined : (e) => e.preventDefault()}

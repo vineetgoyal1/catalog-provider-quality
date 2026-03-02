@@ -90,11 +90,6 @@ export function QualityProgressBar({
           </span>
         </div>
       </div>
-
-      {/* Total Count */}
-      <div className="quality-total">
-        Total: {totalCount.toLocaleString()} providers
-      </div>
     </div>
   );
 }
