@@ -47,19 +47,20 @@ export async function fetchAllProviders(
 
   while (pageCount < MAX_PAGES) {
     try {
-      const response: FetchProvidersResponse = await lx.executeGraphQL(
+      const response: any = await lx.executeGraphQL(
         PROVIDER_QUERY,
         { after: cursor || undefined }
       );
 
-      // Check for GraphQL errors
-      if (response.errors && response.errors.length > 0) {
-        const errorMessages = response.errors.map(e => e.message).join(', ');
-        throw new Error(`GraphQL errors: ${errorMessages}`);
+      // LeanIX SDK returns data directly, not wrapped
+      const allFactSheets = response.allFactSheets;
+
+      if (!allFactSheets) {
+        throw new Error('No allFactSheets in response');
       }
 
-      const edges = response.data.allFactSheets.edges;
-      const providers = edges.map(edge => edge.node);
+      const edges = allFactSheets.edges;
+      const providers = edges.map((edge: any) => edge.node);
 
       allProviders.push(...providers);
       pageCount++;
@@ -70,7 +71,7 @@ export async function fetchAllProviders(
       }
 
       // Check if there are more pages
-      const { hasNextPage, endCursor } = response.data.allFactSheets.pageInfo;
+      const { hasNextPage, endCursor } = allFactSheets.pageInfo;
       if (!hasNextPage || !endCursor) {
         break;
       }
