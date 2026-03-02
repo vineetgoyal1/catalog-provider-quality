@@ -37,6 +37,10 @@ export async function fetchAllProviders(
               id
               displayName
               description
+              ... on Provider {
+                collectionStatus
+                deprecated
+              }
             }
           }
         }
@@ -53,7 +57,14 @@ export async function fetchAllProviders(
       }
 
       const edges = allFactSheets.edges || [];
-      const providers = edges.map((edge: any) => edge.node);
+
+      // Filter: only readyForConsumption and not deprecated
+      const providers = edges
+        .map((edge: any) => edge.node)
+        .filter((provider: any) =>
+          provider.collectionStatus === 'readyForConsumption' &&
+          provider.deprecated !== 'Yes'
+        );
 
       allProviders.push(...providers);
       pageCount++;
