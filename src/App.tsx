@@ -166,6 +166,7 @@ function App() {
     setIsHomepageModalOpen(false);
     setIsHeadquartersModalOpen(false);
     setIsRelationsModalOpen(false);
+    setBreakdownModalOpen(null);
     setIsDescriptionModalOpen(true);
   };
   const handleCloseDescriptionModal = () => {
@@ -179,6 +180,7 @@ function App() {
     setIsHomepageModalOpen(false);
     setIsHeadquartersModalOpen(false);
     setIsRelationsModalOpen(false);
+    setBreakdownModalOpen(null);
     setIsCategoryModalOpen(true);
   };
   const handleCloseCategoryModal = () => {
@@ -192,6 +194,7 @@ function App() {
     setIsCategoryModalOpen(false);
     setIsHeadquartersModalOpen(false);
     setIsRelationsModalOpen(false);
+    setBreakdownModalOpen(null);
     setIsHomepageModalOpen(true);
   };
   const handleCloseHomepageModal = () => {
@@ -205,6 +208,7 @@ function App() {
     setIsCategoryModalOpen(false);
     setIsHomepageModalOpen(false);
     setIsRelationsModalOpen(false);
+    setBreakdownModalOpen(null);
     setIsHeadquartersModalOpen(true);
   };
   const handleCloseHeadquartersModal = () => {
@@ -218,6 +222,7 @@ function App() {
     setIsCategoryModalOpen(false);
     setIsHomepageModalOpen(false);
     setIsHeadquartersModalOpen(false);
+    setBreakdownModalOpen(null);
     setIsRelationsModalOpen(true);
   };
   const handleCloseRelationsModal = () => {
@@ -230,18 +235,38 @@ function App() {
   };
 
   const handleOpenPerfectModal = () => {
+    setIsDescriptionModalOpen(false);
+    setIsCategoryModalOpen(false);
+    setIsHomepageModalOpen(false);
+    setIsHeadquartersModalOpen(false);
+    setIsRelationsModalOpen(false);
     setBreakdownModalOpen('perfect');
   };
 
   const handleOpenGoodModal = () => {
+    setIsDescriptionModalOpen(false);
+    setIsCategoryModalOpen(false);
+    setIsHomepageModalOpen(false);
+    setIsHeadquartersModalOpen(false);
+    setIsRelationsModalOpen(false);
     setBreakdownModalOpen('good');
   };
 
   const handleOpenFairModal = () => {
+    setIsDescriptionModalOpen(false);
+    setIsCategoryModalOpen(false);
+    setIsHomepageModalOpen(false);
+    setIsHeadquartersModalOpen(false);
+    setIsRelationsModalOpen(false);
     setBreakdownModalOpen('fair');
   };
 
   const handleOpenNeedsWorkModal = () => {
+    setIsDescriptionModalOpen(false);
+    setIsCategoryModalOpen(false);
+    setIsHomepageModalOpen(false);
+    setIsHeadquartersModalOpen(false);
+    setIsRelationsModalOpen(false);
     setBreakdownModalOpen('needsWork');
   };
 

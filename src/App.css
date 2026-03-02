@@ -1,8 +1,9 @@
 /* Root app container */
 .app {
   min-height: 100vh;
-  background-color: var(--lx-color-background, #fafafa);
-  font-family: var(--lx-font-family, 'SAP 72', sans-serif);
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  font-family: var(--lx-font-family, 'SAP 72', 'Helvetica Neue', Arial, sans-serif);
+  overflow-y: auto;
 }
 
 /* Loading state */
@@ -11,12 +12,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .loading-text {
-  color: var(--lx-color-text-secondary, #666);
-  font-size: 0.875rem;
+  color: var(--lx-gray-50, #6b7280);
+  font-size: 0.9375rem;
+  font-weight: 500;
 }
 
 /* Error state */
@@ -30,49 +32,59 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-}
-
-.error-retry-button {
-  padding: 0.5rem 1rem;
-  background-color: var(--lx-color-primary, #0070c0);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.error-retry-button:hover {
-  background-color: var(--lx-color-primary-hover, #0055a0);
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 /* Header */
 .app__header {
-  background-color: var(--lx-color-surface, #ffffff);
-  border-bottom: 1px solid var(--lx-color-neutral-200, #e0e0e0);
-  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 3.5rem 2rem;
   text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .app__title {
-  margin: 0 0 0.5rem 0;
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--lx-color-text-primary, #333);
+  margin: 0 0 0.75rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.025em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .app__subtitle {
   margin: 0;
-  font-size: 1rem;
-  color: var(--lx-color-text-secondary, #666);
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 400;
+  letter-spacing: 0.015em;
 }
 
 /* Main content */
 .app__main {
-  padding: 2rem 0;
+  padding: 3rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Quality Metrics Grid */
+.quality-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 1400px) {
+  .quality-metrics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .quality-metrics-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Reset and base styles */
