@@ -14,12 +14,6 @@ const PROVIDER_QUERY = `
       factSheetType: Provider
       first: ${PAGE_SIZE}
       after: $after
-      filter: {
-        facetFilters: [
-          { facetKey: "collectionStatus", keys: ["readyForConsumption"] }
-          { facetKey: "deprecated", operator: NOT, keys: ["Yes"] }
-        ]
-      }
     ) {
       edges {
         node {
