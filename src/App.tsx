@@ -3,11 +3,12 @@ import { lx } from '@leanix/reporting';
 import { QualityProgressBar } from './components/QualityProgressBar';
 import { OverviewCards } from './components/OverviewCards';
 import { DrillDownModal } from './components/DrillDownModal';
+import { QualityBreakdownModal } from './components/QualityBreakdownModal';
 import { LxSpinner } from './components/ui/lx-spinner';
 import { LxBanner } from './components/ui/lx-banner';
 import { LxButton } from './components/ui/lx-button';
 import { TooltipProvider } from './components/ui/tooltip';
-import type { Provider, QualityMetrics } from './types/provider.types';
+import type { Provider, QualityMetrics, ProviderQuality } from './types/provider.types';
 import { fetchAllProviders } from './utils/fetchProviders';
 import { assessProviderQuality } from './utils/assessQuality';
 import './App.css';
@@ -23,6 +24,7 @@ function App() {
   const [isHeadquartersModalOpen, setIsHeadquartersModalOpen] = useState(false);
   const [isRelationsModalOpen, setIsRelationsModalOpen] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
+  const [breakdownModalOpen, setBreakdownModalOpen] = useState<'perfect' | 'good' | 'fair' | 'needsWork' | null>(null);
 
   // Initialize LeanIX SDK and fetch data
   useEffect(() => {
@@ -105,6 +107,58 @@ function App() {
     return assessProviderQuality(providers);
   }, [providers]);
 
+  // Get all assessed providers for breakdown modal
+  const allAssessedProviders: ProviderQuality[] = useMemo(() => {
+    if (providers.length === 0) return [];
+
+    return providers.map(provider => {
+      const wordCount = provider.description ? provider.description.split(/\s+/).length : 0;
+      const isGoodQuality = wordCount > 30;
+      const hasCategoryQuality = !!provider.providerCategory;
+      const hasHomepageQuality = !!provider.homePageUrl;
+      const hasHeadquartersQuality = !!provider.headquartersAddress;
+      const hasRelationsQuality = provider.relProviderToITComponentCount > 0 || provider.relProviderToProductFamilyCount > 0;
+
+      return {
+        ...provider,
+        wordCount,
+        isGoodQuality,
+        hasCategoryQuality,
+        hasHomepageQuality,
+        hasHeadquartersQuality,
+        hasRelationsQuality
+      };
+    });
+  }, [providers]);
+
+  // Filter providers by quality level for breakdown modal
+  const breakdownProviders = useMemo(() => {
+    if (!breakdownModalOpen) return [];
+
+    return allAssessedProviders.filter(provider => {
+      const factorsPassed = [
+        provider.isGoodQuality,
+        provider.hasCategoryQuality,
+        provider.hasHomepageQuality,
+        provider.hasHeadquartersQuality,
+        provider.hasRelationsQuality
+      ].filter(Boolean).length;
+
+      switch (breakdownModalOpen) {
+        case 'perfect':
+          return factorsPassed === 5;
+        case 'good':
+          return factorsPassed === 4;
+        case 'fair':
+          return factorsPassed === 3;
+        case 'needsWork':
+          return factorsPassed <= 2;
+        default:
+          return false;
+      }
+    });
+  }, [allAssessedProviders, breakdownModalOpen]);
+
   // Handlers
   const handleOpenDescriptionModal = () => {
     console.log('Opening description modal');
@@ -175,6 +229,26 @@ function App() {
     window.location.reload();
   };
 
+  const handleOpenPerfectModal = () => {
+    setBreakdownModalOpen('perfect');
+  };
+
+  const handleOpenGoodModal = () => {
+    setBreakdownModalOpen('good');
+  };
+
+  const handleOpenFairModal = () => {
+    setBreakdownModalOpen('fair');
+  };
+
+  const handleOpenNeedsWorkModal = () => {
+    setBreakdownModalOpen('needsWork');
+  };
+
+  const handleCloseBreakdownModal = () => {
+    setBreakdownModalOpen(null);
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -212,6 +286,10 @@ function App() {
             fair={qualityMetrics.overview.fair}
             needsWork={qualityMetrics.overview.needsWork}
             totalCount={qualityMetrics.totalCount}
+            onClickPerfect={handleOpenPerfectModal}
+            onClickGood={handleOpenGoodModal}
+            onClickFair={handleOpenFairModal}
+            onClickNeedsWork={handleOpenNeedsWorkModal}
           />
 
           <div className="quality-metrics-grid">
@@ -320,6 +398,13 @@ function App() {
           title="Providers Missing Relations"
           subtitle="providers with no IT Component or Product Family relations"
           mode="relations"
+        />
+
+        <QualityBreakdownModal
+          isOpen={breakdownModalOpen !== null}
+          onClose={handleCloseBreakdownModal}
+          providers={breakdownProviders}
+          level={breakdownModalOpen || 'perfect'}
         />
       </div>
     </TooltipProvider>

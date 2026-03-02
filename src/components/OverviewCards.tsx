@@ -6,6 +6,10 @@ interface OverviewCardsProps {
   fair: number;
   needsWork: number;
   totalCount: number;
+  onClickPerfect: () => void;
+  onClickGood: () => void;
+  onClickFair: () => void;
+  onClickNeedsWork: () => void;
 }
 
 export function OverviewCards({
@@ -13,7 +17,11 @@ export function OverviewCards({
   good,
   fair,
   needsWork,
-  totalCount
+  totalCount,
+  onClickPerfect,
+  onClickGood,
+  onClickFair,
+  onClickNeedsWork
 }: OverviewCardsProps) {
   const perfectPct = totalCount > 0 ? (perfect / totalCount) * 100 : 0;
   const goodPct = totalCount > 0 ? (good / totalCount) * 100 : 0;
@@ -31,9 +39,12 @@ export function OverviewCards({
       <div className="overview-progress-bar">
         {perfectPct > 0 && (
           <div
-            className="overview-progress-segment overview-progress-segment--perfect"
+            className="overview-progress-segment overview-progress-segment--perfect overview-progress-segment--clickable"
             style={{ width: `${perfectPct}%` }}
             title={`${perfect.toLocaleString()} providers (${perfectPct.toFixed(1)}%)`}
+            onClick={onClickPerfect}
+            role="button"
+            tabIndex={0}
           >
             {perfectPct > 8 && (
               <span className="overview-progress-label">
@@ -44,9 +55,12 @@ export function OverviewCards({
         )}
         {goodPct > 0 && (
           <div
-            className="overview-progress-segment overview-progress-segment--good"
+            className="overview-progress-segment overview-progress-segment--good overview-progress-segment--clickable"
             style={{ width: `${goodPct}%` }}
             title={`${good.toLocaleString()} providers (${goodPct.toFixed(1)}%)`}
+            onClick={onClickGood}
+            role="button"
+            tabIndex={0}
           >
             {goodPct > 8 && (
               <span className="overview-progress-label">
@@ -57,9 +71,12 @@ export function OverviewCards({
         )}
         {fairPct > 0 && (
           <div
-            className="overview-progress-segment overview-progress-segment--fair"
+            className="overview-progress-segment overview-progress-segment--fair overview-progress-segment--clickable"
             style={{ width: `${fairPct}%` }}
             title={`${fair.toLocaleString()} providers (${fairPct.toFixed(1)}%)`}
+            onClick={onClickFair}
+            role="button"
+            tabIndex={0}
           >
             {fairPct > 8 && (
               <span className="overview-progress-label">
@@ -70,9 +87,12 @@ export function OverviewCards({
         )}
         {needsWorkPct > 0 && (
           <div
-            className="overview-progress-segment overview-progress-segment--needs-work"
+            className="overview-progress-segment overview-progress-segment--needs-work overview-progress-segment--clickable"
             style={{ width: `${needsWorkPct}%` }}
             title={`${needsWork.toLocaleString()} providers (${needsWorkPct.toFixed(1)}%)`}
+            onClick={onClickNeedsWork}
+            role="button"
+            tabIndex={0}
           >
             {needsWorkPct > 8 && (
               <span className="overview-progress-label">
@@ -85,7 +105,12 @@ export function OverviewCards({
 
       {/* Legend */}
       <div className="overview-legend">
-        <div className="overview-legend-item">
+        <div
+          className="overview-legend-item overview-legend-item--clickable"
+          onClick={onClickPerfect}
+          role="button"
+          tabIndex={0}
+        >
           <div className="overview-legend-color overview-legend-color--perfect"></div>
           <div className="overview-legend-content">
             <div className="overview-legend-label">Perfect Quality</div>
@@ -96,7 +121,12 @@ export function OverviewCards({
           </div>
         </div>
 
-        <div className="overview-legend-item">
+        <div
+          className="overview-legend-item overview-legend-item--clickable"
+          onClick={onClickGood}
+          role="button"
+          tabIndex={0}
+        >
           <div className="overview-legend-color overview-legend-color--good"></div>
           <div className="overview-legend-content">
             <div className="overview-legend-label">Good Quality</div>
@@ -107,7 +137,12 @@ export function OverviewCards({
           </div>
         </div>
 
-        <div className="overview-legend-item">
+        <div
+          className="overview-legend-item overview-legend-item--clickable"
+          onClick={onClickFair}
+          role="button"
+          tabIndex={0}
+        >
           <div className="overview-legend-color overview-legend-color--fair"></div>
           <div className="overview-legend-content">
             <div className="overview-legend-label">Fair Quality</div>
@@ -118,7 +153,12 @@ export function OverviewCards({
           </div>
         </div>
 
-        <div className="overview-legend-item">
+        <div
+          className="overview-legend-item overview-legend-item--clickable"
+          onClick={onClickNeedsWork}
+          role="button"
+          tabIndex={0}
+        >
           <div className="overview-legend-color overview-legend-color--needs-work"></div>
           <div className="overview-legend-content">
             <div className="overview-legend-label">Needs Work</div>
