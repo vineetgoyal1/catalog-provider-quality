@@ -49,7 +49,7 @@ export async function fetchAllProviders(
     try {
       const response: any = await lx.executeGraphQL(
         PROVIDER_QUERY,
-        { after: cursor || undefined }
+        JSON.stringify({ after: cursor })
       );
 
       // LeanIX SDK returns data directly, not wrapped
