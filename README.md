@@ -1,99 +1,164 @@
-# LeanIX Custom Report
+# Catalog Provider Quality Report
 
-A minimal custom report starter template showcasing LeanIX Reporting SDK basics.
+A LeanIX Custom Report that tracks Provider data quality by analyzing description completeness.
+
+## Overview
+
+This report provides at-a-glance metrics to identify providers with good descriptions versus those needing improvement, enabling data quality teams to prioritize their catalog enrichment efforts.
 
 ## Features
 
-- Fetches Applications from LeanIX workspace
-- Groups applications by business criticality level
-- Displays interactive bar chart with Chart.js
-- Clean separation of concerns (UI, visualization)
-- TypeScript for type safety
+- **Quality Metrics Dashboard**: Two KPI cards showing:
+  - Good Descriptions: Providers with >30 words in description
+  - Needs Improvement: Providers with ≤30 words in description
+
+- **Filtered Data**: Automatically filters to show only relevant providers:
+  - `collectionStatus: readyForConsumption`
+  - `deprecated: not "Yes"`
+
+- **Drill-Down Capability**: Click "Needs Improvement" card to view detailed list of providers requiring description enhancement
+
+- **Direct LeanIX Links**: Each provider in the drill-down view has a "View in LeanIX" button linking directly to the fact sheet
+
+## Technology Stack
+
+- **React 19** with TypeScript
+- **Vite** for build tooling
+- **LeanIX Reporting SDK** (@leanix/reporting v0.4.171)
+- **LeanIX Design System Components** for consistent UI
 
 ## Development
 
-Install dependencies:
+### Prerequisites
 
+- Node.js (LTS version)
+- LeanIX workspace with admin access
+- LeanIX API token
+
+### Setup
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Create `lxr.json` file in project root with your workspace credentials:
+   ```json
+   {
+     "host": "your-instance.leanix.net",
+     "apitoken": "your-api-token"
+   }
+   ```
+
+3. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Access the report through the LeanIX platform:
+   ```
+   https://{instance}.leanix.net/{workspace}/reporting/dev?url=http://localhost:5173
+   ```
+
+### Building
+
+Build for production:
 ```bash
-npm install
+npm run build
 ```
 
-**Important:** Create a `lxr.json` file in the project root with your LeanIX workspace credentials:
+Output will be in `dist/` directory, including `bundle.tgz` ready for upload.
 
-```json
-{
-  "host": "your-workspace.leanix.net",
-  "apitoken": "your-api-token"
-}
-```
+### Upload to LeanIX
 
-Start development server:
-
+Upload the report to your workspace:
 ```bash
-npm run dev
+npm run upload
 ```
 
-The report will run against your LeanIX workspace configured in `lxr.json`.
+After upload:
+1. Go to **Administration → Reports**
+2. Find "Catalog Provider Quality" in the disabled reports list
+3. Enable the report
+4. Open and save it to your workspace
+
+## Quality Criteria
+
+**Good Quality (>30 words)**:
+- Providers with comprehensive descriptions
+- Typically includes organization overview, services, and key information
+
+**Needs Improvement (≤30 words)**:
+- Providers with minimal or missing descriptions
+- Prioritize these for data enrichment
+
+## Current Metrics
+
+Based on the ltlsCollection workspace (as of 2026-03-02):
+- **Total Providers**: 16,016 (after filters)
+- **Good Descriptions**: 8,050 (50.3%)
+- **Needs Improvement**: 7,966 (49.7%)
 
 ## Project Structure
 
 ```
 src/
-├── App.tsx           # Main component with data logic and LeanIX configuration
-├── BarChart.tsx      # Chart.js visualization component
-├── App.css           # Styles
-└── main.tsx          # Application entry point
+├── App.tsx                      # Main component
+├── components/
+│   ├── OverviewCards.tsx       # KPI cards display
+│   ├── DrillDownModal.tsx      # Provider list modal
+│   └── ui/                     # LeanIX Design System components
+├── types/
+│   └── provider.types.ts       # TypeScript interfaces
+├── utils/
+│   ├── wordCount.ts            # Word counting logic
+│   ├── fetchProviders.ts       # GraphQL data fetching
+│   └── assessQuality.ts        # Quality assessment
+└── App.css                      # Styles
 ```
 
-## Build
+## Technical Notes
 
-Build for production:
+### GraphQL Query Pattern
 
-```bash
-npm run build
-```
-
-Output will be in the `dist/` folder.
-
-## Upload to LeanIX
-
-Upload the report to your LeanIX workspace:
-
-```bash
-npm run upload
-```
-
-This builds and uploads the report using credentials from `lxr.json`.
-
-## Customization
-
-### Change What Data to Fetch
-
-Edit the `attributes` array in `src/App.tsx`:
+The LeanIX Reporting SDK requires inline string interpolation for queries (not parameterized variables):
 
 ```typescript
-attributes: ['id', 'displayName', 'businessCriticality'];
+const query = `{
+  allFactSheets(
+    factSheetType: Provider
+    first: 5000
+    ${cursor ? `, after: "${cursor}"` : ''}
+  ) { ... }
+}`;
 ```
 
-To use a different field, update the `FIELD_NAME` constant in `src/App.tsx`.
+### SDK Initialization
 
-### Modify the Visualization
+Reports must be accessed through the LeanIX platform URL for proper SDK initialization. Direct localhost access will fail with `this._currentSetup.config` errors.
 
-Edit `src/App.tsx` to change how data is grouped and displayed.
+## Future Enhancements
 
-Edit `src/BarChart.tsx` to customize the Chart.js configuration.
+Potential additions for v2.0:
+- Additional quality fields (URL, headquarters, aliases)
+- Combined quality score across multiple fields
+- Export to CSV functionality
+- Historical trend tracking
+- Bulk update actions
 
-### Query Different Fact Sheet Types
+## Version History
 
-Change `fixedFactSheetType` in `src/App.tsx`:
+### v1.0.0 (2026-03-02)
+- Initial release
+- Description quality tracking
+- Filtered provider list (readyForConsumption, non-deprecated)
+- KPI cards with drill-down modal
+- Direct LeanIX inventory links
 
-```typescript
-fixedFactSheetType: 'BusinessCapability'; // or 'Project', 'ITComponent', etc.
-```
+## Author
 
-## Learn More
+Vineet Goyal
 
-- [LeanIX Reporting Documentation](https://dev.leanix.net/docs/reporting)
-- [Chart.js Documentation](https://www.chartjs.org/docs/)
-- [React Documentation](https://react.dev/)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+## License
+
+Internal LeanIX use only
