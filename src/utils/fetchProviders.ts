@@ -1,35 +1,8 @@
 import { lx } from '@leanix/reporting';
-import type { Provider, FetchProvidersResponse } from '../types/provider.types';
+import type { Provider } from '../types/provider.types';
 
 const PAGE_SIZE = 5000;
 const MAX_PAGES = 20;
-
-/**
- * GraphQL query to fetch Provider fact sheets
- * Filters: collectionStatus = readyForConsumption, deprecated != Yes
- */
-const PROVIDER_QUERY = `
-  query FetchProviders($after: String) {
-    allFactSheets(
-      factSheetType: Provider
-      first: ${PAGE_SIZE}
-      after: $after
-    ) {
-      edges {
-        node {
-          id
-          displayName
-          description
-        }
-        cursor
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-    }
-  }
-`;
 
 /**
  * Fetch all providers from LeanIX workspace with pagination
@@ -47,19 +20,39 @@ export async function fetchAllProviders(
 
   while (pageCount < MAX_PAGES) {
     try {
-      const response: any = await lx.executeGraphQL(
-        PROVIDER_QUERY,
-        JSON.stringify({ after: cursor })
-      );
+      // Build query with inline cursor (no GraphQL variables - SDK doesn't support them properly)
+      const query = `{
+        allFactSheets(
+          factSheetType: Provider
+          first: ${PAGE_SIZE}
+          ${cursor ? `, after: "${cursor}"` : ''}
+        ) {
+          totalCount
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          edges {
+            node {
+              id
+              displayName
+              description
+            }
+          }
+        }
+      }`;
+
+      const response: any = await lx.executeGraphQL(query);
 
       // LeanIX SDK returns data directly, not wrapped
       const allFactSheets = response.allFactSheets;
 
       if (!allFactSheets) {
+        console.error('No allFactSheets in response:', response);
         throw new Error('No allFactSheets in response');
       }
 
-      const edges = allFactSheets.edges;
+      const edges = allFactSheets.edges || [];
       const providers = edges.map((edge: any) => edge.node);
 
       allProviders.push(...providers);
@@ -72,6 +65,7 @@ export async function fetchAllProviders(
 
       // Check if there are more pages
       const { hasNextPage, endCursor } = allFactSheets.pageInfo;
+
       if (!hasNextPage || !endCursor) {
         break;
       }
