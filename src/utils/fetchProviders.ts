@@ -55,7 +55,7 @@ export async function fetchAllProviders(
     try {
       const response: FetchProvidersResponse = await lx.executeGraphQL(
         PROVIDER_QUERY,
-        JSON.stringify({ after: cursor || undefined })
+        { after: cursor || undefined }
       );
 
       // Check for GraphQL errors
