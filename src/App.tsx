@@ -57,7 +57,7 @@ function App() {
 
         // Fetch providers with progress updates
         console.log('🔵 App: Starting fetchAllProviders...');
-        const fetchedProviders = await fetchAllProviders((page, total, currentProviders, hasMore) => {
+        const fetchedProviders = await fetchAllProviders((page, total, currentProviders) => {
           const progress = 'Loading more...';
           console.log(`🔵 Progress: Page ${page}, ${total} providers fetched`);
           setLoadingProgress(progress);
