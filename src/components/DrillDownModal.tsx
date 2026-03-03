@@ -96,39 +96,84 @@ export function DrillDownModal({
             <thead>
               <tr>
                 <th className="provider-name-col">Provider Name</th>
-                <th className="word-count-col">
-                  {mode === 'description' ? 'Word Count' :
-                   mode === 'category' ? 'Category' :
-                   mode === 'homepage' ? 'Homepage URL' :
-                   mode === 'headquarters' ? 'Headquarters' :
-                   'Relations'}
-                </th>
+                {mode === 'description' && (
+                  <th className="description-col">Description</th>
+                )}
+                {mode === 'description' ? (
+                  <>
+                    <th className="factor-col" title="Organization Type">Org Type</th>
+                    <th className="factor-col" title="Activity Verbs">Activity</th>
+                    <th className="factor-col" title="Word Count (≥20)">Words</th>
+                  </>
+                ) : (
+                  <th className="word-count-col">
+                    {mode === 'category' ? 'Category' :
+                     mode === 'homepage' ? 'Homepage URL' :
+                     mode === 'headquarters' ? 'Headquarters' :
+                     'Relations'}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
               {filteredProviders.map(provider => (
                 <tr key={provider.id}>
                   <td className="provider-name-col">
-                    <a
-                      href={getInventoryLink(provider.id)}
-                      className="provider-link"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        lx.openLink(getInventoryLink(provider.id));
-                      }}
-                    >
-                      {provider.displayName || provider.id}
-                    </a>
+                    <div className="provider-name-text">
+                      <a
+                        href={getInventoryLink(provider.id)}
+                        className="provider-link"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          lx.openLink(getInventoryLink(provider.id));
+                        }}
+                        title={provider.displayName || provider.id}
+                      >
+                        {provider.displayName || provider.id}
+                      </a>
+                    </div>
                   </td>
-                  <td className="word-count-col">
-                    {mode === 'description' && `${provider.wordCount} words`}
-                    {mode === 'category' && (provider.providerCategory || '-')}
-                    {mode === 'homepage' && (provider.homePageUrl || '-')}
-                    {mode === 'headquarters' && (provider.headquartersAddress || '-')}
-                    {mode === 'relations' && (
-                      `${provider.relProviderToITComponentCount + provider.relProviderToProductFamilyCount} relation${(provider.relProviderToITComponentCount + provider.relProviderToProductFamilyCount) !== 1 ? 's' : ''}`
-                    )}
-                  </td>
+                  {mode === 'description' && (
+                    <td className="description-col">
+                      <div className="description-text" title={provider.description || ''}>
+                        {provider.description || '-'}
+                      </div>
+                    </td>
+                  )}
+                  {mode === 'description' ? (
+                    <>
+                      <td className="factor-col">
+                        {provider.hasOrganizationType ? (
+                          <span className="check-icon" title="Has organization type" aria-label="Passes organization type check" role="img">✓</span>
+                        ) : (
+                          <span className="cross-icon" title="Missing organization type" aria-label="Fails organization type check" role="img">✗</span>
+                        )}
+                      </td>
+                      <td className="factor-col">
+                        {provider.hasActivityVerbs ? (
+                          <span className="check-icon" title="Has activity verbs" aria-label="Passes activity verbs check" role="img">✓</span>
+                        ) : (
+                          <span className="cross-icon" title="Missing activity verbs" aria-label="Fails activity verbs check" role="img">✗</span>
+                        )}
+                      </td>
+                      <td className="factor-col">
+                        {provider.hasMinimumWordCount ? (
+                          <span className="check-icon" title={`${provider.wordCount} words`} aria-label={`Passes word count check with ${provider.wordCount} words`} role="img">✓</span>
+                        ) : (
+                          <span className="cross-icon" title={`${provider.wordCount} words (need ≥20)`} aria-label={`Fails word count check with ${provider.wordCount} words (need 20 or more)`} role="img">✗</span>
+                        )}
+                      </td>
+                    </>
+                  ) : (
+                    <td className="word-count-col">
+                      {mode === 'category' && (provider.providerCategory || '-')}
+                      {mode === 'homepage' && (provider.homePageUrl || '-')}
+                      {mode === 'headquarters' && (provider.headquartersAddress || '-')}
+                      {mode === 'relations' && (
+                        `${provider.relProviderToITComponentCount + provider.relProviderToProductFamilyCount} relation${(provider.relProviderToITComponentCount + provider.relProviderToProductFamilyCount) !== 1 ? 's' : ''}`
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

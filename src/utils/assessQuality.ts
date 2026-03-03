@@ -1,5 +1,6 @@
 import type { Provider, ProviderQuality, QualityMetrics } from '../types/provider.types';
-import { countWords, isGoodQuality } from './wordCount';
+import { countWords } from './wordCount';
+import { assessDescriptionQuality } from './descriptionQuality';
 
 /**
  * Check if provider has a valid category
@@ -42,11 +43,17 @@ export function assessProviderQuality(providers: Provider[]): QualityMetrics {
   // Add quality assessment to each provider
   const assessed: ProviderQuality[] = providers.map(provider => {
     const wordCount = countWords(provider.description);
+    const descQuality = assessDescriptionQuality(provider.description);
 
     return {
       ...provider,
       wordCount,
-      isGoodQuality: isGoodQuality(provider.description),
+      isGoodQuality: descQuality.isGoodQuality, // All 3 factors must pass
+      // Description quality factors (for drill-down display)
+      hasOrganizationType: descQuality.hasOrganizationType,
+      hasActivityVerbs: descQuality.hasActivityVerbs,
+      hasMinimumWordCount: descQuality.hasMinimumWordCount,
+      // Other quality factors
       hasCategoryQuality: hasValidCategory(provider.providerCategory),
       hasHomepageQuality: hasValidHomepage(provider.homePageUrl),
       hasHeadquartersQuality: hasValidHeadquarters(provider.headquartersAddress),

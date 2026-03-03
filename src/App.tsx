@@ -9,6 +9,7 @@ import { TooltipProvider } from './components/ui/tooltip';
 import type { Provider, QualityMetrics, ProviderQuality } from './types/provider.types';
 import { fetchAllProviders } from './utils/fetchProviders';
 import { assessProviderQuality } from './utils/assessQuality';
+import { assessDescriptionQuality } from './utils/descriptionQuality';
 import './App.css';
 
 // Lazy load modals for better initial load performance
@@ -128,8 +129,7 @@ function App() {
     if (providers.length === 0) return [];
 
     return providers.map(provider => {
-      const wordCount = provider.description ? provider.description.split(/\s+/).length : 0;
-      const isGoodQuality = wordCount > 20;
+      const descQuality = assessDescriptionQuality(provider.description);
       const hasCategoryQuality = !!provider.providerCategory;
       const hasHomepageQuality = !!provider.homePageUrl;
       const hasHeadquartersQuality = !!provider.headquartersAddress;
@@ -137,8 +137,11 @@ function App() {
 
       return {
         ...provider,
-        wordCount,
-        isGoodQuality,
+        wordCount: descQuality.wordCount,
+        isGoodQuality: descQuality.isGoodQuality,
+        hasOrganizationType: descQuality.hasOrganizationType,
+        hasActivityVerbs: descQuality.hasActivityVerbs,
+        hasMinimumWordCount: descQuality.hasMinimumWordCount,
         hasCategoryQuality,
         hasHomepageQuality,
         hasHeadquartersQuality,
@@ -249,14 +252,14 @@ function App() {
           <div className="quality-metrics-grid">
             <QualityProgressBar
               title="Description"
-              subtitle="Does the provider have a description greater than 20 words?"
+              subtitle="Has Organization Type + Activity Verbs + Word Count (≥20)"
               goodLabel="Good Descriptions"
               needsImprovementLabel="Needs Improvement"
               goodCount={qualityMetrics.description.good.length}
               needsImprovementCount={qualityMetrics.description.needsImprovement.length}
               onClickNeedsImprovement={() => openDrillDownModal('description')}
-              goodHelper=">20 words"
-              needsImprovementHelper="≤20 words"
+              goodHelper="All 3 criteria met"
+              needsImprovementHelper="Missing 1+ criteria"
             />
 
             <QualityProgressBar
@@ -331,7 +334,7 @@ function App() {
                 'Providers Missing Relations'
               }
               subtitle={
-                activeDrillDownModal === 'description' ? 'providers with ≤20 words in description' :
+                activeDrillDownModal === 'description' ? 'providers missing one or more criteria: Organization Type, Activity Verbs, or Word Count (≥20)' :
                 activeDrillDownModal === 'category' ? 'providers with no category defined' :
                 activeDrillDownModal === 'homepage' ? 'providers with no homepage URL defined' :
                 activeDrillDownModal === 'headquarters' ? 'providers with no headquarters address defined' :

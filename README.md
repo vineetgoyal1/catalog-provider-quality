@@ -84,13 +84,16 @@ After upload:
 
 ## Quality Criteria
 
-**Good Quality (>20 words)**:
-- Providers with comprehensive descriptions
-- Typically includes organization overview, services, and key information
+Provider descriptions are assessed using **3 quality factors**:
 
-**Needs Improvement (≤20 words)**:
-- Providers with minimal or missing descriptions
-- Prioritize these for data enrichment
+**Good Quality (All 3 criteria met)**:
+1. **Organization Type**: Mentions company, foundation, developer, vendor, or other organization descriptors (e.g., "Inc.", "LLC", "company", "foundation")
+2. **Activity Verbs**: Contains action verbs indicating what the organization does (e.g., "develops", "provides", "manages", "supports", "manufactures")
+3. **Word Count**: At least 20 words (based on statistical analysis of high-quality descriptions)
+
+**Needs Improvement (Missing 1+ criteria)**:
+- Providers with minimal descriptions, missing organization context, or lacking activity verbs
+- Prioritize these for data enrichment using the drill-down modal to see which specific criteria are missing
 
 ## Current Metrics
 

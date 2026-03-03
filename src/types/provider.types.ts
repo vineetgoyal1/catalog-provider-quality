@@ -17,7 +17,12 @@ export interface Provider {
  */
 export interface ProviderQuality extends Provider {
   wordCount: number;
-  isGoodQuality: boolean;
+  isGoodQuality: boolean; // True if all 3 description factors pass
+  // Description quality factors (3 factors)
+  hasOrganizationType: boolean;   // Mentions company/foundation/developer
+  hasActivityVerbs: boolean;      // Contains action verbs (develops, provides, etc.)
+  hasMinimumWordCount: boolean;   // >= 20 words
+  // Other quality factors
   hasCategoryQuality: boolean;
   hasHomepageQuality: boolean;
   hasHeadquartersQuality: boolean;

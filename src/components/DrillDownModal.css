@@ -105,7 +105,28 @@
 
 /* Column widths */
 .provider-name-col {
+  width: 20%;
+  min-width: 150px;
+  max-width: 250px;
+}
+
+.provider-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.description-col {
   width: 40%;
+  max-width: 400px;
+}
+
+.description-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #6b7280;
+  font-size: 12px;
 }
 
 .word-count-col {
@@ -116,6 +137,31 @@
 /* Align word count header to match data cells */
 .drilldown-table th.word-count-col {
   text-align: right;
+}
+
+/* Factor columns for description quality */
+.factor-col {
+  width: 15%;
+  text-align: center;
+}
+
+.drilldown-table th.factor-col {
+  text-align: center;
+}
+
+/* Check and cross icons for quality factors */
+.check-icon {
+  color: #10b981;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: help;
+}
+
+.cross-icon {
+  color: #ef4444;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: help;
 }
 
 /* Provider links - match Application styling */
