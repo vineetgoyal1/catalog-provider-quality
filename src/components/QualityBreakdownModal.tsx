@@ -108,11 +108,11 @@ export function QualityBreakdownModal({
                 <thead>
                   <tr>
                     <th className="breakdown-table__name">Provider Name</th>
-                    <th className="breakdown-table__factor">Description</th>
-                    <th className="breakdown-table__factor">Category</th>
-                    <th className="breakdown-table__factor">Homepage</th>
-                    <th className="breakdown-table__factor">Headquarters</th>
-                    <th className="breakdown-table__factor">Relations</th>
+                    <th className="breakdown-table__factor" title="Description Quality (>30 words)">Description</th>
+                    <th className="breakdown-table__factor" title="Category Presence">Category</th>
+                    <th className="breakdown-table__factor" title="Homepage URL Presence">Homepage</th>
+                    <th className="breakdown-table__factor" title="Headquarters Address Presence">Headquarters</th>
+                    <th className="breakdown-table__factor" title="IT Component or Product Family Relations">Relations</th>
                   </tr>
                 </thead>
                 <tbody>

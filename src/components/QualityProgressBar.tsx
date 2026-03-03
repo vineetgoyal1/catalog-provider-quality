@@ -74,9 +74,11 @@ export function QualityProgressBar({
           className="quality-progress-bar__segment quality-progress-bar__segment--good"
           style={{ width: `${goodPercentage}%` }}
         >
-          <span className="quality-progress-bar__label">
-            {goodPercentage.toFixed(1)}%
-          </span>
+          {goodPercentage > 0 && (
+            <span className="quality-progress-bar__label">
+              {goodPercentage.toFixed(1)}%
+            </span>
+          )}
         </div>
         <div
           className="quality-progress-bar__segment quality-progress-bar__segment--warning"
@@ -85,9 +87,11 @@ export function QualityProgressBar({
           role="button"
           tabIndex={0}
         >
-          <span className="quality-progress-bar__label">
-            {needsImprovementPercentage.toFixed(1)}%
-          </span>
+          {needsImprovementPercentage > 0 && (
+            <span className="quality-progress-bar__label">
+              {needsImprovementPercentage.toFixed(1)}%
+            </span>
+          )}
         </div>
       </div>
     </div>

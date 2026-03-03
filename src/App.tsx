@@ -20,11 +20,11 @@ function App() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [isHomepageModalOpen, setIsHomepageModalOpen] = useState(false);
-  const [isHeadquartersModalOpen, setIsHeadquartersModalOpen] = useState(false);
-  const [isRelationsModalOpen, setIsRelationsModalOpen] = useState(false);
+
+  // Consolidated modal state - replaces 5 separate boolean states with unified type
+  type DrillDownModalType = 'description' | 'category' | 'homepage' | 'headquarters' | 'relations' | null;
+  const [activeDrillDownModal, setActiveDrillDownModal] = useState<DrillDownModalType>(null);
+
   const [loadingProgress, setLoadingProgress] = useState<string>('');
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [breakdownModalOpen, setBreakdownModalOpen] = useState<'perfect' | 'good' | 'fair' | 'needsWork' | null>(null);
@@ -173,119 +173,30 @@ function App() {
     });
   }, [allAssessedProviders, breakdownModalOpen]);
 
-  // Handlers
-  const handleOpenDescriptionModal = () => {
-    console.log('Opening description modal');
-    setIsCategoryModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setIsRelationsModalOpen(false);
-    setBreakdownModalOpen(null);
-    setIsDescriptionModalOpen(true);
-  };
-  const handleCloseDescriptionModal = () => {
-    console.log('Closing description modal');
-    setIsDescriptionModalOpen(false);
+  // Consolidated modal handlers - much cleaner than 10 separate functions
+  const openDrillDownModal = (modalType: DrillDownModalType) => {
+    console.log(`Opening ${modalType} modal`);
+    setBreakdownModalOpen(null); // Close breakdown modal if open
+    setActiveDrillDownModal(modalType);
   };
 
-  const handleOpenCategoryModal = () => {
-    console.log('Opening category modal');
-    setIsDescriptionModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setIsRelationsModalOpen(false);
-    setBreakdownModalOpen(null);
-    setIsCategoryModalOpen(true);
-  };
-  const handleCloseCategoryModal = () => {
-    console.log('Closing category modal');
-    setIsCategoryModalOpen(false);
+  const closeDrillDownModal = () => {
+    console.log(`Closing drill-down modal`);
+    setActiveDrillDownModal(null);
   };
 
-  const handleOpenHomepageModal = () => {
-    console.log('Opening homepage modal');
-    setIsDescriptionModalOpen(false);
-    setIsCategoryModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setIsRelationsModalOpen(false);
-    setBreakdownModalOpen(null);
-    setIsHomepageModalOpen(true);
-  };
-  const handleCloseHomepageModal = () => {
-    console.log('Closing homepage modal');
-    setIsHomepageModalOpen(false);
+  const openBreakdownModal = (level: 'perfect' | 'good' | 'fair' | 'needsWork') => {
+    console.log(`Opening breakdown modal: ${level}`);
+    setActiveDrillDownModal(null); // Close drill-down modal if open
+    setBreakdownModalOpen(level);
   };
 
-  const handleOpenHeadquartersModal = () => {
-    console.log('Opening headquarters modal');
-    setIsDescriptionModalOpen(false);
-    setIsCategoryModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsRelationsModalOpen(false);
+  const closeBreakdownModal = () => {
     setBreakdownModalOpen(null);
-    setIsHeadquartersModalOpen(true);
-  };
-  const handleCloseHeadquartersModal = () => {
-    console.log('Closing headquarters modal');
-    setIsHeadquartersModalOpen(false);
-  };
-
-  const handleOpenRelationsModal = () => {
-    console.log('Opening relations modal');
-    setIsDescriptionModalOpen(false);
-    setIsCategoryModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setBreakdownModalOpen(null);
-    setIsRelationsModalOpen(true);
-  };
-  const handleCloseRelationsModal = () => {
-    console.log('Closing relations modal');
-    setIsRelationsModalOpen(false);
   };
 
   const handleRetry = () => {
     window.location.reload();
-  };
-
-  const handleOpenPerfectModal = () => {
-    setIsDescriptionModalOpen(false);
-    setIsCategoryModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setIsRelationsModalOpen(false);
-    setBreakdownModalOpen('perfect');
-  };
-
-  const handleOpenGoodModal = () => {
-    setIsDescriptionModalOpen(false);
-    setIsCategoryModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setIsRelationsModalOpen(false);
-    setBreakdownModalOpen('good');
-  };
-
-  const handleOpenFairModal = () => {
-    setIsDescriptionModalOpen(false);
-    setIsCategoryModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setIsRelationsModalOpen(false);
-    setBreakdownModalOpen('fair');
-  };
-
-  const handleOpenNeedsWorkModal = () => {
-    setIsDescriptionModalOpen(false);
-    setIsCategoryModalOpen(false);
-    setIsHomepageModalOpen(false);
-    setIsHeadquartersModalOpen(false);
-    setIsRelationsModalOpen(false);
-    setBreakdownModalOpen('needsWork');
-  };
-
-  const handleCloseBreakdownModal = () => {
-    setBreakdownModalOpen(null);
   };
 
   // Loading state
@@ -325,10 +236,10 @@ function App() {
             fair={qualityMetrics.overview.fair}
             needsWork={qualityMetrics.overview.needsWork}
             totalCount={qualityMetrics.totalCount}
-            onClickPerfect={handleOpenPerfectModal}
-            onClickGood={handleOpenGoodModal}
-            onClickFair={handleOpenFairModal}
-            onClickNeedsWork={handleOpenNeedsWorkModal}
+            onClickPerfect={() => openBreakdownModal('perfect')}
+            onClickGood={() => openBreakdownModal('good')}
+            onClickFair={() => openBreakdownModal('fair')}
+            onClickNeedsWork={() => openBreakdownModal('needsWork')}
             isLoading={isDataLoading}
             loadingProgress={loadingProgress}
           />
@@ -341,7 +252,7 @@ function App() {
               needsImprovementLabel="Needs Improvement"
               goodCount={qualityMetrics.description.good.length}
               needsImprovementCount={qualityMetrics.description.needsImprovement.length}
-              onClickNeedsImprovement={handleOpenDescriptionModal}
+              onClickNeedsImprovement={() => openDrillDownModal('description')}
               goodHelper=">30 words"
               needsImprovementHelper="≤30 words"
             />
@@ -353,7 +264,7 @@ function App() {
               needsImprovementLabel="Missing Category"
               goodCount={qualityMetrics.category.good.length}
               needsImprovementCount={qualityMetrics.category.needsImprovement.length}
-              onClickNeedsImprovement={handleOpenCategoryModal}
+              onClickNeedsImprovement={() => openDrillDownModal('category')}
               goodHelper="Category defined"
               needsImprovementHelper="No category"
             />
@@ -365,7 +276,7 @@ function App() {
               needsImprovementLabel="Missing Homepage"
               goodCount={qualityMetrics.homepage.good.length}
               needsImprovementCount={qualityMetrics.homepage.needsImprovement.length}
-              onClickNeedsImprovement={handleOpenHomepageModal}
+              onClickNeedsImprovement={() => openDrillDownModal('homepage')}
               goodHelper="URL defined"
               needsImprovementHelper="No URL"
             />
@@ -377,7 +288,7 @@ function App() {
               needsImprovementLabel="Missing Address"
               goodCount={qualityMetrics.headquarters.good.length}
               needsImprovementCount={qualityMetrics.headquarters.needsImprovement.length}
-              onClickNeedsImprovement={handleOpenHeadquartersModal}
+              onClickNeedsImprovement={() => openDrillDownModal('headquarters')}
               goodHelper="Address defined"
               needsImprovementHelper="No address"
             />
@@ -389,7 +300,7 @@ function App() {
               needsImprovementLabel="No Relations"
               goodCount={qualityMetrics.relations.good.length}
               needsImprovementCount={qualityMetrics.relations.needsImprovement.length}
-              onClickNeedsImprovement={handleOpenRelationsModal}
+              onClickNeedsImprovement={() => openDrillDownModal('relations')}
               goodHelper="Has IT Component or Product Family"
               needsImprovementHelper="Missing both relations"
             />
@@ -397,57 +308,44 @@ function App() {
         </main>
 
         <Suspense fallback={<div />}>
-          <DrillDownModal
-            isOpen={isDescriptionModalOpen}
-            onClose={handleCloseDescriptionModal}
-            providers={qualityMetrics.description.needsImprovement}
-            title="Providers Needing Description Improvement"
-            subtitle="providers with ≤30 words in description"
-            mode="description"
-          />
+          {/* Single unified DrillDownModal - cleaner than 5 separate instances */}
+          {activeDrillDownModal && (
+            <DrillDownModal
+              isOpen={true}
+              onClose={closeDrillDownModal}
+              providers={
+                activeDrillDownModal === 'description' ? qualityMetrics.description.needsImprovement :
+                activeDrillDownModal === 'category' ? qualityMetrics.category.needsImprovement :
+                activeDrillDownModal === 'homepage' ? qualityMetrics.homepage.needsImprovement :
+                activeDrillDownModal === 'headquarters' ? qualityMetrics.headquarters.needsImprovement :
+                qualityMetrics.relations.needsImprovement
+              }
+              title={
+                activeDrillDownModal === 'description' ? 'Providers Needing Description Improvement' :
+                activeDrillDownModal === 'category' ? 'Providers Missing Category' :
+                activeDrillDownModal === 'homepage' ? 'Providers Missing Homepage URL' :
+                activeDrillDownModal === 'headquarters' ? 'Providers Missing Headquarters Address' :
+                'Providers Missing Relations'
+              }
+              subtitle={
+                activeDrillDownModal === 'description' ? 'providers with ≤30 words in description' :
+                activeDrillDownModal === 'category' ? 'providers with no category defined' :
+                activeDrillDownModal === 'homepage' ? 'providers with no homepage URL defined' :
+                activeDrillDownModal === 'headquarters' ? 'providers with no headquarters address defined' :
+                'providers with no IT Component or Product Family relations'
+              }
+              mode={activeDrillDownModal}
+            />
+          )}
 
-          <DrillDownModal
-            isOpen={isCategoryModalOpen}
-            onClose={handleCloseCategoryModal}
-            providers={qualityMetrics.category.needsImprovement}
-            title="Providers Missing Category"
-            subtitle="providers with no category defined"
-            mode="category"
-          />
-
-          <DrillDownModal
-            isOpen={isHomepageModalOpen}
-            onClose={handleCloseHomepageModal}
-            providers={qualityMetrics.homepage.needsImprovement}
-            title="Providers Missing Homepage URL"
-            subtitle="providers with no homepage URL defined"
-            mode="homepage"
-          />
-
-          <DrillDownModal
-            isOpen={isHeadquartersModalOpen}
-            onClose={handleCloseHeadquartersModal}
-            providers={qualityMetrics.headquarters.needsImprovement}
-            title="Providers Missing Headquarters Address"
-            subtitle="providers with no headquarters address defined"
-            mode="headquarters"
-          />
-
-          <DrillDownModal
-            isOpen={isRelationsModalOpen}
-            onClose={handleCloseRelationsModal}
-            providers={qualityMetrics.relations.needsImprovement}
-            title="Providers Missing Relations"
-            subtitle="providers with no IT Component or Product Family relations"
-            mode="relations"
-          />
-
-          <QualityBreakdownModal
-            isOpen={breakdownModalOpen !== null}
-            onClose={handleCloseBreakdownModal}
-            providers={breakdownProviders}
-            level={breakdownModalOpen || 'perfect'}
-          />
+          {breakdownModalOpen && (
+            <QualityBreakdownModal
+              isOpen={true}
+              onClose={closeBreakdownModal}
+              providers={breakdownProviders}
+              level={breakdownModalOpen}
+            />
+          )}
         </Suspense>
       </div>
     </TooltipProvider>
