@@ -1,14 +1,6 @@
-import { useState, useMemo } from 'react';
-import { Search, Check, X } from 'lucide-react';
-import {
-  SimpleModal,
-  SimpleModalHeader,
-  SimpleModalContent,
-  SimpleModalFooter,
-  SimpleModalTitle,
-  SimpleModalDescription
-} from './ui/simple-modal';
-import { LxEmptyState } from './ui/lx-empty-state';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { Search } from 'lucide-react';
+import { SimpleModal } from './ui/SimpleModal';
 import type { ProviderQuality } from '../types/provider.types';
 import './QualityBreakdownModal.css';
 
@@ -38,6 +30,17 @@ const LEVEL_CONFIG = {
   }
 };
 
+const QUALITY_FACTORS = [
+  { key: 'isGoodQuality', label: 'Desc', tooltip: 'Description Quality (>30 words)' },
+  { key: 'hasCategoryQuality', label: 'Category', tooltip: 'Category Presence' },
+  { key: 'hasHomepageQuality', label: 'Homepage', tooltip: 'Homepage URL Presence' },
+  { key: 'hasHeadquartersQuality', label: 'HQ', tooltip: 'Headquarters Address Presence' },
+  { key: 'hasRelationsQuality', label: 'Relations', tooltip: 'IT Component or Product Family Relations' },
+];
+
+const INITIAL_LOAD = 50;
+const LOAD_MORE_THRESHOLD = 100;
+
 export function QualityBreakdownModal({
   isOpen,
   onClose,
@@ -45,6 +48,10 @@ export function QualityBreakdownModal({
   level
 }: QualityBreakdownModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [displayCount, setDisplayCount] = useState(INITIAL_LOAD);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const config = LEVEL_CONFIG[level];
 
   // Filter providers by search query
   const filteredProviders = useMemo(() => {
@@ -56,123 +63,158 @@ export function QualityBreakdownModal({
     );
   }, [providers, searchQuery]);
 
-  const config = LEVEL_CONFIG[level];
+  // Displayed providers (for lazy loading)
+  const displayedProviders = useMemo(() => {
+    return filteredProviders.slice(0, displayCount);
+  }, [filteredProviders, displayCount]);
+
+  // Reset display count when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setDisplayCount(INITIAL_LOAD);
+      setSearchQuery('');
+    }
+  }, [isOpen]);
+
+  // Lazy loading on scroll
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      if (distanceFromBottom < LOAD_MORE_THRESHOLD && displayCount < filteredProviders.length) {
+        setDisplayCount((prev) => Math.min(prev + INITIAL_LOAD, filteredProviders.length));
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [displayCount, filteredProviders.length]);
+
+  // Truncate provider name
+  const truncateName = useCallback((name: string, maxLength: number = 12) => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength) + '...';
+  }, []);
+
+  // Generate LeanIX inventory link
+  const getInventoryLink = (providerId: string) => {
+    const workspaceHost = window.location.hostname.replace('localhost', 'ltlsCollection.leanix.net');
+    return `https://${workspaceHost}/factsheet/Provider/${providerId}`;
+  };
+
+  // Handle empty state
+  if (providers.length === 0) {
+    return (
+      <SimpleModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={`${config.title} (0)`}
+        subtitle={config.description}
+      >
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+          No providers in this quality tier
+        </div>
+      </SimpleModal>
+    );
+  }
 
   return (
     <SimpleModal
       isOpen={isOpen}
       onClose={onClose}
-      size="3xl"
-      className="max-w-7xl"
+      title={`${config.title} (${filteredProviders.length.toLocaleString()})`}
+      subtitle={config.description}
     >
-      <SimpleModalHeader>
-        <SimpleModalTitle>{config.title}</SimpleModalTitle>
-        <SimpleModalDescription>
-          {filteredProviders.length} of {providers.length} providers with {config.description}
-        </SimpleModalDescription>
-      </SimpleModalHeader>
-
-      <SimpleModalContent>
-        {providers.length === 0 ? (
-          <LxEmptyState title="No providers in this category" />
-        ) : (
-          <>
-            {/* Search Bar */}
-            <div className="search-container">
-              <Search size={20} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search providers by name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="search-clear"
-                  aria-label="Clear search"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-
-            {/* Table */}
-            {filteredProviders.length === 0 ? (
-              <div className="no-results">
-                <p>No providers found matching "{searchQuery}"</p>
-              </div>
-            ) : (
-              <table className="breakdown-table">
-                <thead>
-                  <tr>
-                    <th className="breakdown-table__name">Provider Name</th>
-                    <th className="breakdown-table__factor" title="Description Quality (>30 words)">Description</th>
-                    <th className="breakdown-table__factor" title="Category Presence">Category</th>
-                    <th className="breakdown-table__factor" title="Homepage URL Presence">Homepage</th>
-                    <th className="breakdown-table__factor" title="Headquarters Address Presence">Headquarters</th>
-                    <th className="breakdown-table__factor" title="IT Component or Product Family Relations">Relations</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProviders.map(provider => (
-                    <tr key={provider.id}>
-                      <td className="breakdown-table__name">
-                        {provider.displayName || provider.id}
-                      </td>
-                      <td className="breakdown-table__factor">
-                        {provider.isGoodQuality ? (
-                          <Check className="factor-icon factor-icon--pass" size={20} />
-                        ) : (
-                          <X className="factor-icon factor-icon--fail" size={20} />
-                        )}
-                      </td>
-                      <td className="breakdown-table__factor">
-                        {provider.hasCategoryQuality ? (
-                          <Check className="factor-icon factor-icon--pass" size={20} />
-                        ) : (
-                          <X className="factor-icon factor-icon--fail" size={20} />
-                        )}
-                      </td>
-                      <td className="breakdown-table__factor">
-                        {provider.hasHomepageQuality ? (
-                          <Check className="factor-icon factor-icon--pass" size={20} />
-                        ) : (
-                          <X className="factor-icon factor-icon--fail" size={20} />
-                        )}
-                      </td>
-                      <td className="breakdown-table__factor">
-                        {provider.hasHeadquartersQuality ? (
-                          <Check className="factor-icon factor-icon--pass" size={20} />
-                        ) : (
-                          <X className="factor-icon factor-icon--fail" size={20} />
-                        )}
-                      </td>
-                      <td className="breakdown-table__factor">
-                        {provider.hasRelationsQuality ? (
-                          <Check className="factor-icon factor-icon--pass" size={20} />
-                        ) : (
-                          <X className="factor-icon factor-icon--fail" size={20} />
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </>
+      {/* Search Bar */}
+      <div className="search-container">
+        <Search size={20} className="search-icon" />
+        <input
+          type="text"
+          placeholder="Search providers by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-input"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="search-clear"
+            aria-label="Clear search"
+          >
+            ×
+          </button>
         )}
-      </SimpleModalContent>
+      </div>
 
-      <SimpleModalFooter>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-        >
-          Close
-        </button>
-      </SimpleModalFooter>
+      {filteredProviders.length === 0 ? (
+        <div className="no-results">
+          <p>No providers found matching "{searchQuery}"</p>
+        </div>
+      ) : (
+        <>
+          <div className="executive-overview-count">
+            Showing {displayedProviders.length} of {filteredProviders.length} providers
+          </div>
+
+          <div
+            ref={scrollContainerRef}
+            className="executive-overview-table-container"
+          >
+            <table className="executive-overview-table">
+              <thead>
+                <tr>
+                  <th className="provider-name-col">Provider</th>
+                  {QUALITY_FACTORS.map((factor) => (
+                    <th key={factor.key} className="factor-col" title={factor.tooltip}>
+                      {factor.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displayedProviders.map((provider) => (
+                  <tr key={provider.id}>
+                    <td className="provider-name-cell" title={provider.displayName}>
+                      <a
+                        href={getInventoryLink(provider.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="provider-link"
+                      >
+                        {truncateName(provider.displayName || provider.id)}
+                      </a>
+                    </td>
+                    {QUALITY_FACTORS.map((factor) => {
+                      const passes = provider[factor.key as keyof ProviderQuality] as boolean;
+                      return (
+                        <td key={factor.key} className="factor-cell">
+                          {passes ? (
+                            <span className="check-icon" title="Meets quality">✓</span>
+                          ) : (
+                            <span className="cross-icon" title="Needs improvement">✗</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {displayCount < filteredProviders.length && (
+              <div className="loading-indicator">
+                Scroll down to load more ({(filteredProviders.length - displayCount).toLocaleString()} remaining)
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </SimpleModal>
   );
 }
