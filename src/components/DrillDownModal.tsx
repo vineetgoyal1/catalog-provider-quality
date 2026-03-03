@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
+import { lx } from '@leanix/reporting';
 import { SimpleModal } from './ui/SimpleModal';
 import type { ProviderQuality } from '../types/provider.types';
 import './DrillDownModal.css';
@@ -7,6 +8,7 @@ import './DrillDownModal.css';
 interface DrillDownModalProps {
   isOpen: boolean;
   onClose: () => void;
+  baseUrl: string;
   providers: ProviderQuality[];
   title: string;
   subtitle: string;
@@ -16,6 +18,7 @@ interface DrillDownModalProps {
 export function DrillDownModal({
   isOpen,
   onClose,
+  baseUrl,
   providers,
   title,
   subtitle,
@@ -33,10 +36,9 @@ export function DrillDownModal({
     );
   }, [providers, searchQuery]);
 
-  // Generate LeanIX inventory link
+  // Generate LeanIX inventory link using baseUrl from SDK
   const getInventoryLink = (providerId: string) => {
-    const workspaceHost = window.location.hostname.replace('localhost', 'ltlsCollection.leanix.net');
-    return `https://${workspaceHost}/factsheet/Provider/${providerId}`;
+    return `${baseUrl}/factsheet/Provider/${providerId}`;
   };
 
   // Handle empty state
@@ -109,9 +111,11 @@ export function DrillDownModal({
                   <td className="provider-name-col">
                     <a
                       href={getInventoryLink(provider.id)}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="provider-link"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        lx.openLink(getInventoryLink(provider.id));
+                      }}
                     >
                       {provider.displayName || provider.id}
                     </a>

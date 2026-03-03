@@ -113,6 +113,11 @@
   text-align: right;
 }
 
+/* Align word count header to match data cells */
+.drilldown-table th.word-count-col {
+  text-align: right;
+}
+
 /* Provider links - match Application styling */
 .provider-link {
   color: #3b82f6;

@@ -12,8 +12,8 @@ A LeanIX Custom Report dashboard that visualizes Provider data quality metrics, 
 
 ## Objectives
 
-1. Show count of providers with good descriptions (>30 words)
-2. Show count of providers needing description improvement (≤30 words)
+1. Show count of providers with good descriptions (>20 words)
+2. Show count of providers needing description improvement (≤20 words)
 3. Enable drill-down to see which specific providers need improvement
 4. Provide direct links to LeanIX inventory for each provider
 5. Build foundation for incremental addition of more quality metrics
@@ -48,8 +48,8 @@ A LeanIX Custom Report dashboard that visualizes Provider data quality metrics, 
 
 2. **Quality Assessment**
    - Calculate word count for each provider's description
-   - Classify as "Good Quality" if >30 words
-   - Classify as "Needs Improvement" if ≤30 words
+   - Classify as "Good Quality" if >20 words
+   - Classify as "Needs Improvement" if ≤20 words
    - Handle null/undefined descriptions as 0 words
 
 3. **Overview Visualization**
@@ -59,7 +59,7 @@ A LeanIX Custom Report dashboard that visualizes Provider data quality metrics, 
 
 4. **Drill-Down Modal**
    - Opens when clicking "Needs Improvement" card
-   - Shows list of providers with ≤30 word descriptions
+   - Shows list of providers with ≤20 word descriptions
    - Displays: provider name, current word count
    - Each row has "View in LeanIX" button linking to fact sheet
 
@@ -281,7 +281,7 @@ export function assessProviderQuality(
   const assessed = providers.map(p => ({
     ...p,
     wordCount: countWords(p.description),
-    isGoodQuality: countWords(p.description) > 30
+    isGoodQuality: countWords(p.description) > 20
   }));
 
   return {
@@ -330,7 +330,7 @@ const workspaceHost = setup.settings.baseUrl.replace('https://', '');
 │  │ Good Descriptions│  │Needs Improvement │        │
 │  │                  │  │    [CLICKABLE]   │        │
 │  │      245         │  │       42         │        │
-│  │   >30 words      │  │    ≤30 words     │        │
+│  │   >20 words      │  │    ≤20 words     │        │
 │  │  [Green badge]   │  │  [Warning badge] │        │
 │  └──────────────────┘  └──────────────────┘        │
 │                                                       │
@@ -340,7 +340,7 @@ When clicking "Needs Improvement" card:
 
 ┌─────────────────────────────────────────────────────┐
 │  Providers Needing Description Improvement      [X] │
-│  42 providers with ≤30 words in description         │
+│  42 providers with ≤20 words in description         │
 ├─────────────────────────────────────────────────────┤
 │                                                       │
 │  Provider Name          Word Count    Action         │

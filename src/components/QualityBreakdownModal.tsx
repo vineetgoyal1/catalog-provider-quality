@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Search } from 'lucide-react';
+import { lx } from '@leanix/reporting';
 import { SimpleModal } from './ui/SimpleModal';
 import type { ProviderQuality } from '../types/provider.types';
 import './QualityBreakdownModal.css';
@@ -7,6 +8,7 @@ import './QualityBreakdownModal.css';
 interface QualityBreakdownModalProps {
   isOpen: boolean;
   onClose: () => void;
+  baseUrl: string;
   providers: ProviderQuality[];
   level: 'perfect' | 'good' | 'fair' | 'needsWork';
 }
@@ -31,7 +33,7 @@ const LEVEL_CONFIG = {
 };
 
 const QUALITY_FACTORS = [
-  { key: 'isGoodQuality', label: 'Desc', tooltip: 'Description Quality (>30 words)' },
+  { key: 'isGoodQuality', label: 'Desc', tooltip: 'Description Quality (>20 words)' },
   { key: 'hasCategoryQuality', label: 'Category', tooltip: 'Category Presence' },
   { key: 'hasHomepageQuality', label: 'Homepage', tooltip: 'Homepage URL Presence' },
   { key: 'hasHeadquartersQuality', label: 'HQ', tooltip: 'Headquarters Address Presence' },
@@ -44,6 +46,7 @@ const LOAD_MORE_THRESHOLD = 100;
 export function QualityBreakdownModal({
   isOpen,
   onClose,
+  baseUrl,
   providers,
   level
 }: QualityBreakdownModalProps) {
@@ -103,10 +106,9 @@ export function QualityBreakdownModal({
     return name.substring(0, maxLength) + '...';
   }, []);
 
-  // Generate LeanIX inventory link
+  // Generate LeanIX inventory link using baseUrl from SDK
   const getInventoryLink = (providerId: string) => {
-    const workspaceHost = window.location.hostname.replace('localhost', 'ltlsCollection.leanix.net');
-    return `https://${workspaceHost}/factsheet/Provider/${providerId}`;
+    return `${baseUrl}/factsheet/Provider/${providerId}`;
   };
 
   // Handle empty state
@@ -184,9 +186,11 @@ export function QualityBreakdownModal({
                     <td className="provider-name-cell" title={provider.displayName}>
                       <a
                         href={getInventoryLink(provider.id)}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="provider-link"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          lx.openLink(getInventoryLink(provider.id));
+                        }}
                       >
                         {truncateName(provider.displayName || provider.id)}
                       </a>

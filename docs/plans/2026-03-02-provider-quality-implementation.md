@@ -128,10 +128,10 @@ export function countWords(text: string | null | undefined): number {
  * Check if description meets quality threshold
  *
  * @param description - Provider description text
- * @returns true if >30 words, false otherwise
+ * @returns true if >20 words, false otherwise
  */
 export function isGoodQuality(description: string | null | undefined): boolean {
-  return countWords(description) > 30;
+  return countWords(description) > 20;
 }
 ```
 
@@ -411,7 +411,7 @@ Expected: No TypeScript errors
 git add src/utils/assessQuality.ts
 git commit -m "feat: add quality assessment logic
 
-- Assess provider description quality (>30 words)
+- Assess provider description quality (>20 words)
 - Split into good/needsImprovement categories
 - Generate LeanIX inventory links"
 ```
@@ -449,7 +449,7 @@ export function OverviewCards({
       <LxKpiCard
         title="Good Descriptions"
         value={goodCount.toString()}
-        subtitle=">30 words"
+        subtitle=">20 words"
         variant="success"
         className="overview-card"
       />
@@ -457,7 +457,7 @@ export function OverviewCards({
       <LxKpiCard
         title="Needs Improvement"
         value={needsImprovementCount.toString()}
-        subtitle="≤30 words"
+        subtitle="≤20 words"
         variant="warning"
         className="overview-card overview-card--clickable"
         onClick={onClickNeedsImprovement}
@@ -571,7 +571,7 @@ export function DrillDownModal({
       <div className="drill-down-modal">
         <div className="drill-down-modal__header">
           <p className="drill-down-modal__subtitle">
-            {providers.length} provider{providers.length !== 1 ? 's' : ''} with ≤30 words in description
+            {providers.length} provider{providers.length !== 1 ? 's' : ''} with ≤20 words in description
           </p>
         </div>
 
@@ -580,7 +580,7 @@ export function DrillDownModal({
             <LxEmptyState
               icon="success"
               title="No providers need improvement"
-              description="All providers have good descriptions with more than 30 words"
+              description="All providers have good descriptions with more than 20 words"
             />
           ) : (
             <table className="provider-table">
@@ -1191,8 +1191,8 @@ The Provider Quality Dashboard shows description quality metrics for providers i
 
 ### Quality Metrics
 
-**Good Descriptions**: Providers with >30 words in their description field
-**Needs Improvement**: Providers with ≤30 words (or no description)
+**Good Descriptions**: Providers with >20 words in their description field
+**Needs Improvement**: Providers with ≤20 words (or no description)
 
 ### Filters Applied
 
@@ -1256,7 +1256,7 @@ A LeanIX Custom Report that visualizes Provider data quality metrics, starting w
 
 ## Features
 
-- **Description Quality Tracking**: Shows count of providers with good (>30 words) vs needs-improvement (≤30 words) descriptions
+- **Description Quality Tracking**: Shows count of providers with good (>20 words) vs needs-improvement (≤20 words) descriptions
 - **KPI Cards**: Clean dashboard view with clickable drill-down
 - **Provider List**: See which specific providers need improvement
 - **Direct Links**: Open provider fact sheets in LeanIX with one click
@@ -1412,7 +1412,7 @@ git commit -m "chore: final cleanup and verification for v1.0.0"
 git tag -a v1.0.0 -m "Release v1.0.0: Provider Quality Dashboard
 
 Initial release featuring:
-- Description quality tracking (>30 words)
+- Description quality tracking (>20 words)
 - KPI card overview with drill-down
 - Modal showing providers needing improvement
 - Direct links to LeanIX inventory

@@ -22,8 +22,8 @@ export function countWords(text: string | null | undefined): number {
  * Check if description meets quality threshold
  *
  * @param description - Provider description text
- * @returns true if >30 words, false otherwise
+ * @returns true if >20 words, false otherwise
  */
 export function isGoodQuality(description: string | null | undefined): boolean {
-  return countWords(description) > 30;
+  return countWords(description) > 20;
 }

@@ -9,8 +9,8 @@ This report provides at-a-glance metrics to identify providers with good descrip
 ## Features
 
 - **Quality Metrics Dashboard**: Two KPI cards showing:
-  - Good Descriptions: Providers with >30 words in description
-  - Needs Improvement: Providers with ≤30 words in description
+  - Good Descriptions: Providers with >20 words in description
+  - Needs Improvement: Providers with ≤20 words in description
 
 - **Filtered Data**: Automatically filters to show only relevant providers:
   - `collectionStatus: readyForConsumption`
@@ -84,11 +84,11 @@ After upload:
 
 ## Quality Criteria
 
-**Good Quality (>30 words)**:
+**Good Quality (>20 words)**:
 - Providers with comprehensive descriptions
 - Typically includes organization overview, services, and key information
 
-**Needs Improvement (≤30 words)**:
+**Needs Improvement (≤20 words)**:
 - Providers with minimal or missing descriptions
 - Prioritize these for data enrichment
 

@@ -20,6 +20,7 @@ function App() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [baseUrl, setBaseUrl] = useState<string>('');
 
   // Consolidated modal state - replaces 5 separate boolean states with unified type
   type DrillDownModalType = 'description' | 'category' | 'homepage' | 'headquarters' | 'relations' | null;
@@ -39,8 +40,9 @@ function App() {
         // Initialize LeanIX SDK
         console.log('🔵 App: Calling lx.init()...');
         try {
-          await lx.init();
-          console.log('✅ App: lx.init() complete');
+          const setup = await lx.init();
+          setBaseUrl(setup.settings.baseUrl);
+          console.log('✅ App: lx.init() complete, baseUrl:', setup.settings.baseUrl);
         } catch (e) {
           // SDK already initialized, continue anyway
           console.log('⚠️ App: SDK already initialized');
@@ -127,7 +129,7 @@ function App() {
 
     return providers.map(provider => {
       const wordCount = provider.description ? provider.description.split(/\s+/).length : 0;
-      const isGoodQuality = wordCount > 30;
+      const isGoodQuality = wordCount > 20;
       const hasCategoryQuality = !!provider.providerCategory;
       const hasHomepageQuality = !!provider.homePageUrl;
       const hasHeadquartersQuality = !!provider.headquartersAddress;
@@ -247,14 +249,14 @@ function App() {
           <div className="quality-metrics-grid">
             <QualityProgressBar
               title="Description"
-              subtitle="Does the provider have a description greater than 30 words?"
+              subtitle="Does the provider have a description greater than 20 words?"
               goodLabel="Good Descriptions"
               needsImprovementLabel="Needs Improvement"
               goodCount={qualityMetrics.description.good.length}
               needsImprovementCount={qualityMetrics.description.needsImprovement.length}
               onClickNeedsImprovement={() => openDrillDownModal('description')}
-              goodHelper=">30 words"
-              needsImprovementHelper="≤30 words"
+              goodHelper=">20 words"
+              needsImprovementHelper="≤20 words"
             />
 
             <QualityProgressBar
@@ -313,6 +315,7 @@ function App() {
             <DrillDownModal
               isOpen={true}
               onClose={closeDrillDownModal}
+              baseUrl={baseUrl}
               providers={
                 activeDrillDownModal === 'description' ? qualityMetrics.description.needsImprovement :
                 activeDrillDownModal === 'category' ? qualityMetrics.category.needsImprovement :
@@ -328,7 +331,7 @@ function App() {
                 'Providers Missing Relations'
               }
               subtitle={
-                activeDrillDownModal === 'description' ? 'providers with ≤30 words in description' :
+                activeDrillDownModal === 'description' ? 'providers with ≤20 words in description' :
                 activeDrillDownModal === 'category' ? 'providers with no category defined' :
                 activeDrillDownModal === 'homepage' ? 'providers with no homepage URL defined' :
                 activeDrillDownModal === 'headquarters' ? 'providers with no headquarters address defined' :
@@ -342,6 +345,7 @@ function App() {
             <QualityBreakdownModal
               isOpen={true}
               onClose={closeBreakdownModal}
+              baseUrl={baseUrl}
               providers={breakdownProviders}
               level={breakdownModalOpen}
             />
