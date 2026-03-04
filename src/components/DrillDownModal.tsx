@@ -64,6 +64,18 @@ export function DrillDownModal({
       title={title}
       subtitle={`${filteredProviders.length} of ${providers.length} ${subtitle}`}
     >
+      {/* Criteria explanation for description mode */}
+      {mode === 'description' && (
+        <div className="criteria-explanation">
+          <div className="criteria-item">
+            <strong>Activity Verbs:</strong> Action words describing what the organization does <span className="criteria-examples">(e.g., "develops software", "provides services", "maintains platforms")</span>
+          </div>
+          <div className="criteria-item">
+            <strong>Organization Type:</strong> Identifies the type of entity <span className="criteria-examples">(e.g., "company", "foundation", "developer", "provider")</span>
+          </div>
+        </div>
+      )}
+
       {/* Search Bar */}
       <div className="search-container">
         <Search size={20} className="search-icon" />
