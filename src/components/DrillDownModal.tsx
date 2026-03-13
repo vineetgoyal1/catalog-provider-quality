@@ -41,6 +41,9 @@ export function DrillDownModal({
     return `${baseUrl}/factsheet/Provider/${providerId}`;
   };
 
+  // Determine modal size based on mode
+  const modalSize = mode === 'description' ? 'large' : mode === 'relations' ? 'medium-large' : 'medium';
+
   // Handle empty state
   if (providers.length === 0) {
     return (
@@ -49,6 +52,7 @@ export function DrillDownModal({
         onClose={onClose}
         title={title}
         subtitle={`0 ${subtitle}`}
+        size={modalSize}
       >
         <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
           No providers need improvement
@@ -63,6 +67,7 @@ export function DrillDownModal({
       onClose={onClose}
       title={title}
       subtitle={`${filteredProviders.length} of ${providers.length} ${subtitle}`}
+      size={modalSize}
     >
       {/* Criteria explanation for description mode */}
       {mode === 'description' && (
@@ -117,12 +122,16 @@ export function DrillDownModal({
                     <th className="factor-col" title="Activity Verbs">Activity</th>
                     <th className="factor-col" title="Word Count (≥20)">Words</th>
                   </>
+                ) : mode === 'relations' ? (
+                  <>
+                    <th className="word-count-col" title="IT Component Relations">IT Components</th>
+                    <th className="word-count-col" title="Product Family Relations">Product Families</th>
+                  </>
                 ) : (
                   <th className="word-count-col">
                     {mode === 'category' ? 'Category' :
                      mode === 'homepage' ? 'Homepage URL' :
-                     mode === 'headquarters' ? 'Headquarters' :
-                     'Relations'}
+                     'Headquarters'}
                   </th>
                 )}
               </tr>
@@ -176,14 +185,20 @@ export function DrillDownModal({
                         )}
                       </td>
                     </>
+                  ) : mode === 'relations' ? (
+                    <>
+                      <td className="word-count-col">
+                        {provider.relProviderToITComponentCount}
+                      </td>
+                      <td className="word-count-col">
+                        {provider.relProviderToProductFamilyCount}
+                      </td>
+                    </>
                   ) : (
                     <td className="word-count-col">
                       {mode === 'category' && (provider.providerCategory || '-')}
                       {mode === 'homepage' && (provider.homePageUrl || '-')}
                       {mode === 'headquarters' && (provider.headquartersAddress || '-')}
-                      {mode === 'relations' && (
-                        `${provider.relProviderToITComponentCount + provider.relProviderToProductFamilyCount} relation${(provider.relProviderToITComponentCount + provider.relProviderToProductFamilyCount) !== 1 ? 's' : ''}`
-                      )}
                     </td>
                   )}
                 </tr>

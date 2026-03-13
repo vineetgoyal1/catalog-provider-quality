@@ -7,9 +7,10 @@ interface SimpleModalProps {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  size?: 'small' | 'medium' | 'medium-large' | 'large';
 }
 
-export function SimpleModal({ isOpen, onClose, title, subtitle, children }: SimpleModalProps) {
+export function SimpleModal({ isOpen, onClose, title, subtitle, children, size = 'large' }: SimpleModalProps) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -28,7 +29,7 @@ export function SimpleModal({ isOpen, onClose, title, subtitle, children }: Simp
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+      <div className={`modal-container modal-container--${size}`} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
             <h2>{title}</h2>
